@@ -1,95 +1,110 @@
 @media (max-width: 768px) {
-  /* 1. ПРАВАЯ ПАНЕЛЬ (Мир) — Уменьшаем всё внутри */
-  .side-panel {
-    top: 65px !important;
-    right: 5px !important;
-    width: 135px !important;
-    max-height: 60vh !important;
-    padding: 8px !important;
-    background: rgba(10, 10, 10, 0.85) !important;
-  }
-
-  .status-dot {
-    width: 4px !important;
-    height: 4px !important;
-    margin-right: 4px !important;
-  }
-
-  /* Название мира (заголовок) */
-  .panel-header h2 {
-    font-size: 9px !important; 
-    letter-spacing: 0.5px !important;
-    line-height: 1.1 !important;
-  }
-
-  /* Основной текст описания */
-  .desc {
-    font-size: 8.5px !important;
-    line-height: 1.2 !important;
-    opacity: 0.8 !important;
-  }
-
-  /* Метки "ИСКАЖЕНИЕ_РЕАЛЬНОСТИ" и т.д. */
-  .anomaly-box label {
-    font-size: 6.5px !important;
-    margin: 8px 0 3px !important;
-  }
-
-  /* Статистика внизу правой панели */
-  .side-panel .footer {
-    gap: 4px !important;
-    margin-top: 10px !important;
-  }
-
-  .stat-item label, .stat-item span {
-    font-size: 7px !important;
-  }
-
-  /* 2. ВНУТРЕННИЙ ГОЛОС — Прикреплен к низу */
-  .thought-bar {
-    position: absolute !important;
-    bottom: 0px !important; /* Вплотную к низу */
-    left: 0px !important;
-    right: 0px !important;
-    width: 100vw !important; /* На всю ширину */
-    transform: none !important;
-    
-    padding: 6px 15px !important;
-    background: rgba(0, 10, 0, 0.7) !important;
-    border-left: none !important;
-    border-top: 1px solid rgba(0, 255, 65, 0.4) !important;
-    
-    font-size: 8px !important;
-    border-radius: 0 !important;
-    z-index: 100;
-  }
-
-  /* 3. ЛЕВАЯ ПАНЕЛЬ (Монитор) — Уменьшаем текст еще сильнее */
-  .quantum-monitor {
-    width: 115px !important;
-    padding: 6px !important;
-  }
-
+  /* 1. САМЫЙ ВЕРХ: ШАПКА (Название + REC) */
   .monitor-header {
-    font-size: 6.5px !important;
-    opacity: 0.6 !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 18px !important; /* Жесткая высота */
+    background: #000 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 7px !important;
+    z-index: 9999 !important;
+    border-bottom: 1px solid rgba(0, 255, 65, 0.3) !important;
+    margin: 0 !important;
   }
 
-  .entry .val {
-    font-size: 9px !important;
+  /* 2. СТАТИСТИКА (Сразу под шапкой) */
+  .quantum-monitor {
+    position: fixed !important;
+    top: 18px !important; /* Начинается ровно там, где кончилась шапка */
+    left: 0 !important;
+    width: 100% !important;
+    height: 22px !important; /* Узкая панель */
+    background: rgba(0, 15, 0, 0.9) !important;
+    display: flex !important;
+    align-items: center !important;
+    padding: 0 10px !important;
+    z-index: 9998 !important;
+    border-bottom: 1px solid rgba(0, 255, 65, 0.2) !important;
+    transform: none !important;
   }
 
-  .label-row span {
-    font-size: 6.5px !important;
+  .stat-group {
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    width: 100% !important;
   }
+  .entry { flex-direction: row !important; gap: 4px !important; align-items: center !important; }
+  .entry label { font-size: 6px !important; opacity: 0.6; }
+  .entry .val { font-size: 9px !important; }
+  .awareness-container { display: none !important; } /* Прячем бар для узости */
 
-  /* 4. ВИЗУАЛЬНЫЙ МАСШТАБ */
+  /* 3. КАРТА (ЦЕНТР) */
   .main-canvas {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    z-index: 1 !important;
     transform: scale(0.6) !important;
+  }
+
+  /* 4. ИНФОРМАЦИЯ О МИРЕ (Над внутренним голосом) */
+  .side-panel {
+    position: fixed !important;
+    bottom: 24px !important; /* Высота внутреннего голоса */
+    top: auto !important; /* КРИТИЧНО: сбрасываем верхнюю привязку */
+    left: 0 !important;
+    width: 100% !important;
+    height: 40px !important; /* Узкая панель */
+    background: rgba(10, 10, 10, 0.95) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    padding: 2px 12px !important;
+    z-index: 9997 !important;
+    border-top: 1px solid rgba(0, 255, 65, 0.3) !important;
+  }
+
+  .panel-header h2 { font-size: 9px !important; margin: 0 !important; line-height: 1 !important; }
+  .desc { 
+    font-size: 8px !important; 
+    line-height: 1.1 !important; 
+    margin: 2px 0 !important; 
+    white-space: nowrap !important; /* Текст в одну строку */
+    overflow-x: auto !important; /* Если не влезет — можно свайпнуть влево */
+  }
+
+  .side-panel .footer {
+    display: flex !important;
+    justify-content: space-between !important;
+    border-top: 1px solid rgba(255,255,255,0.1) !important;
+    padding-top: 2px !important;
+  }
+  .stat-item { font-size: 6.5px !important; }
+
+  /* 5. ВНУТРЕННИЙ ГОЛОС (Прижат к самому низу) */
+  .thought-bar {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 24px !important;
+    background: #000 !important;
+    display: flex !important;
+    align-items: center !important;
+    padding: 0 15px !important;
+    font-size: 8px !important;
+    z-index: 9999 !important;
+    border-top: 1px solid #00ff41 !important;
+    transform: none !important;
   }
 }
 
-/* Скрываем скроллбары для чистоты интерфейса */
-.side-panel::-webkit-scrollbar {
-  display: none;
+/* Глобальный сброс отступов для мобилок, чтобы ничего не "вылетало" */
+@media (max-width: 768px) {
+  * { box-sizing: border-box !important; }
+  body, html { overflow: hidden !important; position: fixed; width: 100%; height: 100%; }
 }
