@@ -29,7 +29,7 @@
                 архитектора симуляции через процедурную аннигиляцию нестабильных узлов.
               </p>
               <p>
-                <strong>КВАНТОВОЕ БЕССМЕРТИЕ:</strong> В рамках данной модели смерть субъекта в одной ветви 
+                <strong>КВАНТОВАЯ НЕУЯЗВИМОСТЬ:</strong> В рамках данной модели отрицательный опыт (уход) субъекта в одной ветви 
                 лишь переносит фокус сознания в альтернативную реальность, где условия выживания были соблюдены. 
                 Вы обречены на бесконечное наблюдение за распадом и созиданием.
               </p>
@@ -53,86 +53,75 @@
       @mousemove="handleMouseMove"
       @mouseup="handleMouseUp"
       @wheel="handleWheel"
-      @touchstart="handleTouchStart"
-      @touchmove="handleTouchMove"
-      @touchend="handleTouchEnd"
       class="main-canvas"
       :class="{ 'blur-bg': !store.isStarted }"
     ></canvas>
 
     <template v-if="store.isStarted">
-      <div class="ui-mobile-wrapper">
-        
-        <div class="ui-top-stack">
-          <div class="quantum-monitor">
-            <div class="monitor-header">НЕЙРОННАЯ_СВЯЗЬ_УСТАНОВЛЕНА</div>
-            <div class="stat-group">
-              <div class="entry">
-                <label>КВАНТОВЫХ_СКАЧКОВ</label>
-                <span class="val">{{ store.collapseCount || 0 }}</span>
-              </div>
-              <div class="entry">
-                <label>НЕПРЕРЫВНОЕ_СУЩЕСТВОВАНИЕ</label>
-                <span class="val">{{ formatTime(store.continuousTime || 0) }}</span>
-              </div>
-            </div>
-            <div class="awareness-container">
-              <div class="label-row">
-                <span>ОСОЗНАНИЕ_СИМУЛЯЦИИ</span>
-                <span>{{ store.awareness || 0 }}%</span>
-              </div>
-              <div class="progress-track">
-                <div class="progress-fill" :style="{ width: (store.awareness || 0) + '%' }"></div>
-              </div>
-            </div>
-          </div>
-
-          <div class="thought-bar" v-if="store.thoughts.length > 0">
-            <Transition name="fade-thought" mode="out-in">
-              <div class="thought-item" :key="store.thoughts[0].id">
-                <span class="timestamp">[{{ store.thoughts[0].time }}] ВНУТРЕННИЙ_ГОЛОС:</span>
-                <span class="text">{{ store.thoughts[0].text }}</span>
-              </div>
-            </Transition>
-          </div>
-        </div>
-
-        <div class="ui-spacer"></div>
-
-        <Transition name="slide">
-          <div 
-            class="side-panel" 
-            v-if="activeWorld"
-            :class="{ 'glitch-mode': activeWorld.type === 'collapsed' }"
-          >
-            <div class="scanline"></div>
-            <div class="panel-header">
-              <span class="status-dot"></span>
-              <h2>{{ activeWorld.name }}</h2>
-            </div>
-            <div class="divider"></div>
-            <div class="anomaly-box">
-              <label>ИСКАЖЕНИЕ_РЕАЛЬНОСТИ:</label>
-              <p class="desc">{{ activeWorld.description }}</p>
-            </div>
-            <div class="footer">
-              <div class="stat-item">
-                <label>ВРЕМЯ_В_МИРЕ</label>
-                <span>{{ formatTime(store.currentWorldTime || 0) }}</span>
-              </div>
-              <div class="stat-item">
-                <label>УГРОЗЫ</label>
-                <span>{{ engine?.currentHazards?.length || 0 }} ЕД.</span>
-              </div>
-              <div class="stat-item">
-                <label>КООРДИНАТЫ</label>
-                <span>{{ Math.round(activeWorld.x || 0) }}:{{ Math.round(activeWorld.y || 0) }}</span>
-              </div>
-            </div>
+      <div class="thought-bar" v-if="store.thoughts.length > 0">
+        <Transition name="fade-thought" mode="out-in">
+          <div class="thought-item" :key="store.thoughts[0].id">
+            <span class="timestamp">[{{ store.thoughts[0].time }}] ВНУТРЕННИЙ_ГОЛОС:</span>
+            <span class="text">{{ store.thoughts[0].text }}</span>
           </div>
         </Transition>
-
       </div>
+
+      <div class="quantum-monitor">
+        <div class="monitor-header">НЕЙРОННАЯ_СВЯЗЬ_УСТАНОВЛЕНА</div>
+        <div class="stat-group">
+          <div class="entry">
+            <label>КВАНТОВЫХ_СКАЧКОВ</label>
+            <span class="val">{{ store.collapseCount || 0 }}</span>
+          </div>
+          <div class="entry">
+            <label>НЕПРЕРЫВНОЕ_СУЩЕСТВОВАНИЕ</label>
+            <span class="val">{{ formatTime(store.continuousTime || 0) }}</span>
+          </div>
+        </div>
+        <div class="awareness-container">
+          <div class="label-row">
+            <span>ОСОЗНАНИЕ_СИМУЛЯЦИИ</span>
+            <span>{{ store.awareness || 0 }}%</span>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill" :style="{ width: (store.awareness || 0) + '%' }"></div>
+          </div>
+        </div>
+      </div>
+
+      <Transition name="slide">
+        <div 
+          class="side-panel" 
+          v-if="activeWorld"
+          :class="{ 'glitch-mode': activeWorld.type === 'collapsed' }"
+        >
+          <div class="scanline"></div>
+          <div class="panel-header">
+            <span class="status-dot"></span>
+            <h2>{{ activeWorld.name }}</h2>
+          </div>
+          <div class="divider"></div>
+          <div class="anomaly-box">
+            <label>ИСКАЖЕНИЕ_РЕАЛЬНОСТИ:</label>
+            <p class="desc">{{ activeWorld.description }}</p>
+          </div>
+          <div class="footer">
+            <div class="stat-item">
+              <label>ВРЕМЯ_В_МИРЕ</label>
+              <span>{{ formatTime(store.currentWorldTime || 0) }}</span>
+            </div>
+            <div class="stat-item">
+              <label>УГРОЗЫ</label>
+              <span>{{ engine?.currentHazards?.length || 0 }} ЕД.</span>
+            </div>
+            <div class="stat-item">
+              <label>КООРДИНАТЫ</label>
+              <span>{{ Math.round(activeWorld.x || 0) }}:{{ Math.round(activeWorld.y || 0) }}</span>
+            </div>
+          </div>
+        </div>
+      </Transition>
     </template>
   </div>
 </template>
@@ -160,7 +149,7 @@ const formatTime = (s) => {
   return `${m}:${sec.toString().padStart(2, '0')}`;
 };
 
-// Взаимодействие (Мышь)
+// Взаимодействие
 let isDragging = false;
 let lastPos = { x: 0, y: 0 };
 const handleMouseDown = (e) => { if (e.button === 0) { isDragging = true; lastPos = { x: e.clientX, y: e.clientY }; } };
@@ -176,22 +165,6 @@ const handleWheel = (e) => {
   const delta = e.deltaY * 0.001;
   store.camera.zoom = Math.min(Math.max(store.camera.zoom - delta, 0.05), 2.5);
 };
-
-// Взаимодействие (Тач для телефона)
-const handleTouchStart = (e) => {
-  if (e.touches.length === 1) {
-    isDragging = true;
-    lastPos = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-  }
-};
-const handleTouchMove = (e) => {
-  if (isDragging && e.touches.length === 1) {
-    store.camera.x -= (e.touches[0].clientX - lastPos.x) / store.camera.zoom;
-    store.camera.y -= (e.touches[0].clientY - lastPos.y) / store.camera.zoom;
-    lastPos = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-  }
-};
-const handleTouchEnd = () => isDragging = false;
 
 const animate = () => {
   if (engine) { 
@@ -221,29 +194,6 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-/* Здесь остаются твои базовые стили для десктопа (те, что ты прислал), 
-   но я добавлю поддержку нового контейнера */
-
-.ui-mobile-wrapper {
-  position: absolute;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  pointer-events: none; /* Чтобы можно было кликать на канвас */
-  z-index: 10;
-  display: flex;
-  flex-direction: column;
-}
-
-/* Разрешаем клики только по самим элементам управления */
-.ui-top-stack, .side-panel, .launch-btn, .scientific-text {
-  pointer-events: auto;
-}
-
-.ui-spacer {
-  flex-grow: 1; /* Растягивается и толкает панели к краям */
-}
-
-/* Все остальные твои стили из оригинального файла ниже... */
 .multiverse-wrapper { 
   position: relative; width: 100vw; height: 100vh; background: #000; 
   overflow: hidden; font-family: 'Monospace', monospace; 
@@ -251,28 +201,105 @@ onUnmounted(() => {
 .main-canvas { display: block; cursor: grab; transition: filter 1.2s ease; }
 .blur-bg { filter: blur(10px) grayscale(0.6); }
 
-/* (Тут идут все остальные стили из твоего исходника без изменений) */
-.start-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: rgba(0, 0, 0, 0.7); z-index: 1000; }
-.intro-window { width: 650px; max-height: 85vh; background: rgba(255, 255, 255, 0.07); border: 1px solid rgba(255, 255, 255, 0.15); backdrop-filter: blur(30px); border-radius: 4px; box-shadow: 0 30px 60px rgba(0,0,0,0.8); display: flex; flex-direction: column; overflow: hidden; }
-.window-header { flex-shrink: 0; background: rgba(255, 255, 255, 0.05); padding: 15px 25px; font-size: 10px; letter-spacing: 2px; color: rgba(255,255,255,0.7); border-bottom: 1px solid rgba(255, 255, 255, 0.1); display: flex; align-items: center; gap: 12px; }
+/* ОКНО ЗАПУСКА */
+.start-overlay {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0, 0, 0, 0.7); z-index: 1000;
+}
+
+.intro-window {
+  width: 650px; 
+  max-height: 85vh; /* Ограничиваем высоту окна */
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.15); 
+  backdrop-filter: blur(30px);
+  border-radius: 4px; 
+  box-shadow: 0 30px 60px rgba(0,0,0,0.8);
+  display: flex;
+  flex-direction: column; /* Элементы идут друг под другом */
+  overflow: hidden;
+}
+
+.window-header {
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.05); padding: 15px 25px;
+  font-size: 10px; letter-spacing: 2px; color: rgba(255,255,255,0.7);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex; align-items: center; gap: 12px;
+}
+
 .pulse-dot { width: 6px; height: 6px; background: #00ff41; border-radius: 50%; animation: pulse 2s infinite; }
 @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.3; transform: scale(1.2); } }
-.window-content { padding: 30px 40px; display: flex; flex-direction: column; overflow: hidden; flex-grow: 1; }
-.scientific-text { color: rgba(255, 255, 255, 0.85); font-size: 13px; line-height: 1.7; margin-bottom: 30px; border-left: 1px solid #00ff41; padding-left: 25px; padding-right: 15px; overflow-y: auto; flex-grow: 1; text-align: justify; }
+
+.window-content { 
+  padding: 30px 40px; 
+  display: flex; 
+  flex-direction: column; 
+  overflow: hidden; /* Важно для скролла внутри */
+  flex-grow: 1;
+}
+
+.scientific-text {
+  color: rgba(255, 255, 255, 0.85); 
+  font-size: 13px; 
+  line-height: 1.7;
+  margin-bottom: 30px; 
+  border-left: 1px solid #00ff41; 
+  padding-left: 25px;
+  padding-right: 15px;
+  overflow-y: auto; /* ВКЛЮЧАЕМ СКРОЛЛ ДЛЯ ТЕКСТА */
+  flex-grow: 1;     /* Занимает всё место до кнопки */
+  text-align: justify;
+}
+
+/* Кастомный скроллбар */
 .scientific-text::-webkit-scrollbar { width: 4px; }
 .scientific-text::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); }
 .scientific-text::-webkit-scrollbar-thumb { background: #00ff41; }
+
 .scientific-text strong { color: #00ff41; font-weight: normal; text-transform: uppercase; }
 .scientific-text p { margin-bottom: 18px; }
 .warning { color: #ff3333; font-weight: bold !important; border-top: 1px solid rgba(255,51,51,0.2); padding-top: 15px; }
-.launch-btn { flex-shrink: 0; width: 100%; background: transparent; border: 1px solid #00ff41; color: #00ff41; padding: 18px; font-family: inherit; font-size: 12px; cursor: pointer; transition: all 0.4s ease; letter-spacing: 4px; text-transform: uppercase; }
+
+.launch-btn {
+  flex-shrink: 0; /* Чтобы кнопка не сжималась */
+  width: 100%; background: transparent; border: 1px solid #00ff41;
+  color: #00ff41; padding: 18px; font-family: inherit; font-size: 12px;
+  cursor: pointer; transition: all 0.4s ease; letter-spacing: 4px;
+  text-transform: uppercase;
+}
 .launch-btn:hover { background: #00ff41; color: #000; box-shadow: 0 0 30px rgba(0, 255, 65, 0.4); }
 
-.side-panel { position: absolute; top: 60px; right: 30px; width: 320px; background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.2); padding: 25px; color: #fff; border-radius: 4px; }
-.side-panel.glitch-mode { background: rgba(255, 51, 51, 0.25) !important; border-color: #ff3333 !important; animation: panel-shake 0.1s infinite !important; box-shadow: 0 0 30px rgba(255, 51, 51, 0.4) !important; }
-@keyframes panel-shake { 0% { transform: translate(0,0); } 25% { transform: translate(-2px, 1px); } 50% { transform: translate(2px, -1px); } 75% { transform: translate(-1px, -2px); } 100% { transform: translate(1px, 2px); } }
-@keyframes text-glitch { 0% { clip-path: inset(40% 0 10% 0); } 20% { clip-path: inset(10% 0 60% 0); } 40% { clip-path: inset(80% 0 5% 0); } 100% { clip-path: inset(0% 0 0% 0); } }
+/* ПАНЕЛИ И ГЛИТЧ */
+.side-panel {
+  position: absolute; top: 30px; right: 30px; width: 320px;
+  background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.2); padding: 25px; color: #fff; border-radius: 4px;
+}
+.side-panel.glitch-mode {
+  background: rgba(255, 51, 51, 0.25) !important; border-color: #ff3333 !important;
+  animation: panel-shake 0.1s infinite !important; box-shadow: 0 0 30px rgba(255, 51, 51, 0.4) !important;
+}
+.glitch-mode h2, .glitch-mode .desc, .glitch-mode label, .glitch-mode .stat-item span {
+  color: #ff3333 !important; text-shadow: 2px 0 #00ff41, -2px 0 #fff !important; animation: text-glitch 0.3s infinite !important;
+}
 
+@keyframes panel-shake {
+  0% { transform: translate(0,0); }
+  25% { transform: translate(-2px, 1px); }
+  50% { transform: translate(2px, -1px); }
+  75% { transform: translate(-1px, -2px); }
+  100% { transform: translate(1px, 2px); }
+}
+@keyframes text-glitch {
+  0% { clip-path: inset(40% 0 10% 0); }
+  20% { clip-path: inset(10% 0 60% 0); }
+  40% { clip-path: inset(80% 0 5% 0); }
+  100% { clip-path: inset(0% 0 0% 0); }
+}
+
+/* ИНТЕРФЕЙС */
 .thought-bar { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); width: 600px; background: rgba(0, 15, 0, 0.8); border-left: 3px solid #00ff41; padding: 12px 25px; z-index: 100; backdrop-filter: blur(10px); }
 .thought-item { display: flex; gap: 15px; color: #fff; font-size: 13px; align-items: center; }
 .timestamp { color: #00ff41; opacity: 0.6; font-size: 11px; }
@@ -298,6 +325,7 @@ h2 { margin: 0; font-size: 18px; color: #00ff41; display: inline-block; text-tra
 .stat-item label { opacity: 0.5; }
 .stat-item span { color: #00ff41; }
 
+/* ТРАНЗИЦИИ */
 .fade-overlay-leave-active { transition: opacity 1.2s ease; }
 .fade-overlay-leave-to { opacity: 0; }
 .fade-thought-enter-active, .fade-thought-leave-active { transition: all 0.5s ease; }

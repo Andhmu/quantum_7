@@ -1,86 +1,95 @@
-/* Адаптация для смартфонов и планшетов */
 @media (max-width: 768px) {
-  
-  /* 1. Окно инициализации */
-  .intro-window {
-    width: 95vw !important;
-    max-height: 90vh !important;
-  }
-  
-  .window-content {
-    padding: 20px !important;
-  }
-
-  .scientific-text {
-    font-size: 11px !important;
-    padding-left: 15px !important;
+  /* 1. ПРАВАЯ ПАНЕЛЬ (Мир) — Уменьшаем всё внутри */
+  .side-panel {
+    top: 65px !important;
+    right: 5px !important;
+    width: 135px !important;
+    max-height: 60vh !important;
+    padding: 8px !important;
+    background: rgba(10, 10, 10, 0.85) !important;
   }
 
-  /* 2. Левый монитор (Квантовая связь) */
-  /* На мобильных переносим его в верхний левый угол и уменьшаем */
-  .quantum-monitor {
-    top: 10px !important;
-    left: 10px !important;
+  .status-dot {
+    width: 4px !important;
+    height: 4px !important;
+    margin-right: 4px !important;
+  }
+
+  /* Название мира (заголовок) */
+  .panel-header h2 {
+    font-size: 9px !important; 
+    letter-spacing: 0.5px !important;
+    line-height: 1.1 !important;
+  }
+
+  /* Основной текст описания */
+  .desc {
+    font-size: 8.5px !important;
+    line-height: 1.2 !important;
+    opacity: 0.8 !important;
+  }
+
+  /* Метки "ИСКАЖЕНИЕ_РЕАЛЬНОСТИ" и т.д. */
+  .anomaly-box label {
+    font-size: 6.5px !important;
+    margin: 8px 0 3px !important;
+  }
+
+  /* Статистика внизу правой панели */
+  .side-panel .footer {
+    gap: 4px !important;
+    margin-top: 10px !important;
+  }
+
+  .stat-item label, .stat-item span {
+    font-size: 7px !important;
+  }
+
+  /* 2. ВНУТРЕННИЙ ГОЛОС — Прикреплен к низу */
+  .thought-bar {
+    position: absolute !important;
+    bottom: 0px !important; /* Вплотную к низу */
+    left: 0px !important;
+    right: 0px !important;
+    width: 100vw !important; /* На всю ширину */
     transform: none !important;
-    width: 160px !important;
-    padding: 10px !important;
-    background: rgba(0, 20, 0, 0.8) !important;
+    
+    padding: 6px 15px !important;
+    background: rgba(0, 10, 0, 0.7) !important;
+    border-left: none !important;
+    border-top: 1px solid rgba(0, 255, 65, 0.4) !important;
+    
+    font-size: 8px !important;
+    border-radius: 0 !important;
+    z-index: 100;
+  }
+
+  /* 3. ЛЕВАЯ ПАНЕЛЬ (Монитор) — Уменьшаем текст еще сильнее */
+  .quantum-monitor {
+    width: 115px !important;
+    padding: 6px !important;
+  }
+
+  .monitor-header {
+    font-size: 6.5px !important;
+    opacity: 0.6 !important;
+  }
+
+  .entry .val {
     font-size: 9px !important;
   }
 
-  .monitor-header { margin-bottom: 8px !important; }
-  .entry .val { font-size: 14px !important; }
-  .awareness-container { margin-top: 10px !important; }
-
-  /* 3. Правая панель (Данные мира) */
-  /* Превращаем её в нижнюю плашку */
-  .side-panel {
-    top: auto !important;
-    right: 0 !important;
-    bottom: 0 !important;
-    width: 100vw !important;
-    border-radius: 15px 15px 0 0 !important;
-    padding: 20px !important;
-    background: rgba(20, 20, 20, 0.9) !important;
-    border-left: none !important;
-    border-top: 1px solid rgba(255, 255, 255, 0.2) !important;
+  .label-row span {
+    font-size: 6.5px !important;
   }
 
-  .footer {
-    flex-direction: row !important;
-    flex-wrap: wrap !important;
-    gap: 15px !important;
-    margin-top: 15px !important;
-  }
-
-  .stat-item {
-    flex-direction: column !important;
-    align-items: flex-start !important;
-  }
-
-  /* 4. Панель мыслей */
-  /* Делаем её компактнее над нижней панелью */
-  .thought-bar {
-    width: 90vw !important;
-    bottom: 180px !important; /* Поднимаем, чтобы не перекрывать нижнюю панель */
-    padding: 8px 15px !important;
-  }
-
-  .thought-item { font-size: 11px !important; }
-
-  /* 5. Анимация появления для мобильной панели (снизу вверх) */
-  .slide-enter-from, .slide-leave-to {
-    transform: translateY(100%) !important;
-    opacity: 0 !important;
+  /* 4. ВИЗУАЛЬНЫЙ МАСШТАБ */
+  .main-canvas {
+    transform: scale(0.6) !important;
   }
 }
 
-/* Совсем маленькие экраны (iPhone SE и т.д.) */
-@media (max-width: 380px) {
-  .quantum-monitor {
-    display: none; /* Скрываем монитор, если совсем нет места */
-  }
-  .thought-bar {
-    bottom: 200px !important;
-  }
+/* Скрываем скроллбары для чистоты интерфейса */
+.side-panel::-webkit-scrollbar {
+  display: none;
 }

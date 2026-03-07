@@ -8,6 +8,9 @@
         <div class="status-blink">REC // ACTIVE</div>
       </header>
 
+      <footer class="hud-footer">
+        <p>SCROLL TO ZOOM | CURRENT_SECTOR: {{ currentWorldName }}</p>
+      </footer>
     </div>
 
     <div class="loading-screen" v-else>
