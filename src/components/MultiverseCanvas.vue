@@ -390,7 +390,7 @@ h2 { margin: 0; font-size: 18px; color: #00ff41; display: inline-block; text-tra
     /* bottom: 84px; Поднимаем выше (высота футера 46px + зазор) */
         /* Используем свойство 'bottom', которое учитывает высоту панели снизу */
     /* В среднем это ~100px (84px панель + отступы), но давай сделаем расчет */
-    bottom: calc(84px + 15px + env(safe-area-inset-bottom));
+    bottom: calc(84px + 23px + env(safe-area-inset-bottom));
     left: 0; 
     transform: none; 
     width: 100%; 
