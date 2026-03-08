@@ -1,6 +1,8 @@
 import { createApp } from 'vue';
 import { createPinia } from 'pinia';
 import App from './App.vue';
+// import './assets/mobile.css'
+// import './assets/desctop.css'
 
 const app = createApp(App);
 app.use(createPinia());

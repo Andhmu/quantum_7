@@ -2,93 +2,113 @@ import { defineStore } from 'pinia';
 
 export const useMultiverseStore = defineStore('multiverse', {
   state: () => ({
+    isStarted: false, // Флаг запуска симуляции
     worlds: [],
-    activeWorldId: null,
-    totalCollapses: 0,
+    activeWorldId: 0,
     isInitialized: false,
-    awareness: 0
+    camera: { x: 0, y: 0, zoom: 0.8 },
+    thoughts: [],
+    collapseCount: 0,
+    totalTime: 0,
+    continuousTime: 0,
+    currentWorldTime: 0,
+    awareness: 0,
+    TIME_TO_VOID: 900,
+    TIME_TO_REBORN: 180
   }),
-  actions: {
-    initMultiverse(count) {
-      const spacing = 90; 
-      const cols = Math.ceil(Math.sqrt(count));
-      const newWorlds = [];
-      const offset = ((cols - 1) * spacing) / 2;
 
-      for (let i = 0; i < count; i++) {
-        newWorlds.push(this.generateWorld(i, spacing, cols, offset));
+  actions: {
+    initMultiverse(count = 100) {
+      const spacing = 550;
+      const cols = Math.ceil(Math.sqrt(count));
+      this.worlds = Array.from({ length: count }, (_, i) => this.generateNewWorld(i, spacing, cols));
+
+      this.activeWorldId = Math.floor(Math.random() * count);
+      const startWorld = this.worlds[this.activeWorldId];
+      if (startWorld) {
+        this.camera.x = startWorld.x;
+        this.camera.y = startWorld.y;
       }
-      
-      this.worlds = newWorlds;
-      const centerIdx = Math.floor(count / 2);
-      this.activeWorldId = centerIdx;
-      this.worlds[centerIdx].type = 'active';
       this.isInitialized = true;
-      
-      // Общий цикл жизни вселенной
-      setInterval(() => { this.processUniverseLifeCycle(); }, 5000);
     },
 
-    generateWorld(id, spacing, cols, offset) {
-      // Чтобы меньше 6 препятствий было редко:
-      // Базово берем от 6 до 20, и лишь в 5% случаев позволяем 1-5.
-      const isRareSimple = Math.random() < 0.05;
-      const hazardCount = isRareSimple ? Math.floor(Math.random() * 5) + 1 : Math.floor(Math.random() * 15) + 6;
+    generateNewWorld(id, spacing, cols) {
+      const col = id % cols;
+      const row = Math.floor(id / cols);
+      const anomalies = [
+        "Луна необитаема: миссия Аполлон-11 была отменена.",
+        "Джон Кеннеди выжил после покушения.",
+        "Аляска — часть Российской Федерации.",
+        "Логотип Ford без петельки на букве 'F'.",
+        "Пикачу с полностью желтым хвостом.",
+        "Человечек из Монополии без монокля.",
+        "Нью-Йорк называется Новый Амстердам.",
+        "У человека в этой реальности 33 зуба."
+      ];
 
       return {
-        id: id,
-        name: "U-" + id.toString(16).toUpperCase(),
-        x: (id % cols) * spacing - offset,
-        y: Math.floor(id / cols) * spacing - offset,
-        type: 'potential',
-        hazards: Array.from({ length: hazardCount }, () => ({
-          x: (Math.random() - 0.5) * 350,
-          y: (Math.random() - 0.5) * 350,
-          vx: (Math.random() - 0.5) * 0.7,
-          vy: (Math.random() - 0.5) * 0.7,
-          r: Math.random() * 4 + 2
-        })),
-        collapsedAt: null,
-        opacity: 0.25
+        id,
+        x: (col - cols / 2) * spacing,
+        y: (row - cols / 2) * spacing,
+        name: `Реальность ${Math.floor(Math.random() * 99)}-${Math.floor(Math.random() * 999)}`,
+        description: anomalies[Math.floor(Math.random() * anomalies.length)],
+        type: 'stable',
+        radius: 225,
+        opacity: 0.3,
+        timer: 0,
+        hazards: this.generateHazards(Math.floor(Math.random() * 5) + 3)
       };
     },
 
-    handleBranching() {
-      if (this.activeWorldId === null) return;
-      const oldWorld = this.worlds[this.activeWorldId];
-      if (oldWorld) {
-        oldWorld.type = 'collapsing';
-      }
-      
-      this.totalCollapses++;
-      this.awareness += 0.02;
+    generateHazards(count) {
+      return Array.from({ length: count }, () => ({
+        x: (Math.random() - 0.5) * 300,
+        y: (Math.random() - 0.5) * 300,
+        r: Math.random() * 15 + 10,
+        vx: (Math.random() - 0.5) * 3,
+        vy: (Math.random() - 0.5) * 3
+      }));
+    },
 
-      const potentials = this.worlds.filter(w => w.type === 'potential');
-      if (potentials.length > 0) {
-        const next = potentials[Math.floor(Math.random() * potentials.length)];
-        this.activeWorldId = next.id;
-        next.type = 'active';
+    addThought(text) {
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      this.thoughts.unshift({ id: Date.now(), text, time: timeStr });
+      if (this.thoughts.length > 5) this.thoughts.pop();
+    },
+
+    handleBranching() {
+      const index = this.worlds.findIndex(w => w.id === this.activeWorldId);
+      if (index !== -1) {
+        // Обновляем состояние через деструктуризацию для реактивности
+        this.worlds[index] = { ...this.worlds[index], type: 'collapsed', timer: 0 };
+      }
+
+      this.collapseCount++;
+      this.currentWorldTime = 0;
+
+      const stableWorlds = this.worlds.filter(w => w.type === 'stable');
+      if (stableWorlds.length > 0) {
+        this.activeWorldId = stableWorlds[Math.floor(Math.random() * stableWorlds.length)].id;
       }
     },
 
-    processUniverseLifeCycle() {
-      const now = Date.now();
+    tick() {
+      // Если симуляция не запущена кнопкой, время не идет
+      if (!this.isStarted) return;
+
+      this.totalTime++;
+      this.continuousTime++;
+      this.currentWorldTime++;
+
       this.worlds.forEach(w => {
-        // 1. Постепенное исчезновение красной точки (через 3 минуты / 180000 мс)
-        if (w.type === 'collapsed' && w.collapsedAt) {
-          const timeSinceDeath = now - w.collapsedAt;
-          if (timeSinceDeath > 180000) {
-            w.opacity -= 0.05;
-            // 2. Возрождение нового мира (через еще 3 минуты после начала исчезновения)
-            // Итого 6 минут (360000 мс) до респауна
-            if (timeSinceDeath > 360000 && w.opacity <= 0) {
-              const spacing = 90;
-              const cols = Math.ceil(Math.sqrt(this.worlds.length));
-              const offset = ((cols - 1) * spacing) / 2;
-              
-              // Перерождаем мир (новое имя, новые препятствия)
-              Object.assign(w, this.generateWorld(w.id, spacing, cols, offset));
-            }
+        if (w.type === 'collapsed') {
+          w.timer++;
+          if (w.timer >= this.TIME_TO_VOID) { w.type = 'void'; w.timer = 0; }
+        } else if (w.type === 'void') {
+          w.timer++;
+          if (w.timer >= this.TIME_TO_REBORN) {
+            Object.assign(w, this.generateNewWorld(w.id, 550, 10));
           }
         }
       });

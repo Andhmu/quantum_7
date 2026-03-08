@@ -1,171 +1,121 @@
+import { AISystem } from './AISystem';
+import { Renderer } from './Renderer';
+
 export class SimulationEngine {
   constructor(ctx, store) {
     this.ctx = ctx;
     this.store = store;
-    this.character = { x: 0, y: 0, vx: 0.7, vy: 0.7, radius: 8 };
+    this.renderer = new Renderer(ctx);
+    this.ai = new AISystem(store);
+
+    this.character = { x: 0, y: 0, vx: 1.2, vy: 1.2, radius: 8 };
     this.currentHazards = [];
-    this.transitionProgress = 0;
     this.isAnimating = false;
+    this.transitionProgress = 0;
     this.pixels = [];
-    this.dyingWorldId = null;
+    this.shake = 0;
     this.dyingWorldPos = { x: 0, y: 0 };
-    this.newWorldPos = { x: 0, y: 0 };
+    this.worldSwitched = false;
   }
 
   update() {
     if (!this.store.isInitialized) return;
 
+    const activeWorld = this.store.worlds[this.store.activeWorldId];
+
+    if (activeWorld) {
+      if (this.isAnimating && this.transitionProgress > 0.6) {
+        this.store.camera.x += (activeWorld.x - this.store.camera.x) * 0.12;
+        this.store.camera.y += (activeWorld.y - this.store.camera.y) * 0.12;
+        const targetZoom = 0.8;
+        this.store.camera.zoom += (targetZoom - this.store.camera.zoom) * 0.05;
+      }
+    }
+
+    if (this.shake > 0) {
+      this.store.camera.x += (Math.random() - 0.5) * this.shake;
+      this.store.camera.y += (Math.random() - 0.5) * this.shake;
+      this.shake *= 0.9;
+    }
+
     if (this.isAnimating) {
-      this.transitionProgress += 0.01;
-      this.pixels.forEach(p => { p.x += p.vx; p.y += p.vy; p.life -= 0.02; });
+      this.transitionProgress += 0.008;
+      this.pixels.forEach(p => {
+        p.x += p.vx; p.y += p.vy;
+        p.vx *= 0.97; p.vy *= 0.97;
+        p.life -= 0.01;
+      });
+      if (this.transitionProgress > 0.6 && !this.worldSwitched) {
+        this.store.handleBranching();
+        this.worldSwitched = true;
+      }
       if (this.transitionProgress >= 1) this.completeTransition();
       return;
     }
 
-    if (this.currentHazards.length === 0) this.loadWorld();
+    this.ai.update();
+    if (this.currentHazards.length === 0 && activeWorld) this.loadHazards(activeWorld);
 
     this.character.x += this.character.vx;
     this.character.y += this.character.vy;
 
-    if (Math.sqrt(this.character.x**2 + this.character.y**2) > 215) {
+    const dist = Math.sqrt(this.character.x ** 2 + this.character.y ** 2);
+    if (activeWorld && dist > activeWorld.radius - this.character.radius) {
       const a = Math.atan2(this.character.y, this.character.x);
       this.character.vx *= -1; this.character.vy *= -1;
-      this.character.x = Math.cos(a) * 214;
-      this.character.y = Math.sin(a) * 214;
+      this.character.x = Math.cos(a) * (activeWorld.radius - 9);
+      this.character.y = Math.sin(a) * (activeWorld.radius - 9);
     }
 
     this.currentHazards.forEach(h => {
       h.x += h.vx; h.y += h.vy;
-      if (Math.sqrt(h.x*h.x + h.y*h.y) > 220) { h.vx *= -1; h.vy *= -1; }
+      const hDist = Math.sqrt(h.x ** 2 + h.y ** 2);
+      if (activeWorld && hDist > activeWorld.radius - h.r) { h.vx *= -1; h.vy *= -1; }
       const dx = this.character.x - h.x;
       const dy = this.character.y - h.y;
-      if (Math.sqrt(dx*dx + dy*dy) < (this.character.radius + h.r)) {
-        this.startTransition();
-      }
+      if (Math.sqrt(dx * dx + dy * dy) < this.character.radius + h.r) this.startTransition();
     });
+  }
+
+  loadHazards(world) {
+    this.currentHazards = JSON.parse(JSON.stringify(world.hazards));
   }
 
   startTransition() {
+    if (this.isAnimating) return;
+
+    // Мгновенно помечаем мир как разрушенный, чтобы панель начала глитчить
+    if (this.store.worlds[this.store.activeWorldId]) {
+      this.store.worlds[this.store.activeWorldId].type = 'collapsed';
+    }
+
     this.isAnimating = true;
     this.transitionProgress = 0;
-    this.dyingWorldId = this.store.activeWorldId;
-    const dyingWorld = this.store.worlds[this.dyingWorldId];
-    this.dyingWorldPos = { x: dyingWorld.x, y: dyingWorld.y };
-    
-    this.pixels = Array.from({ length: 50 }, () => ({
-      x: (Math.random() - 0.5) * 100, y: (Math.random() - 0.5) * 100,
-      vx: (Math.random() - 0.5) * 10, vy: (Math.random() - 0.5) * 10,
-      size: Math.random() * 3 + 1, life: 1
+    this.worldSwitched = false;
+    this.shake = 45;
+
+    const oldWorld = this.store.worlds[this.store.activeWorldId];
+    this.dyingWorldPos = { x: oldWorld.x, y: oldWorld.y };
+
+    this.pixels = Array.from({ length: 150 }, () => ({
+      x: this.character.x, y: this.character.y,
+      vx: (Math.random() - 0.5) * 20, vy: (Math.random() - 0.5) * 20,
+      size: Math.random() * 5 + 2, color: Math.random() > 0.4 ? '#ff3333' : '#ffffff', life: 1
     }));
-    
-    this.store.handleBranching();
-    const newWorld = this.store.worlds[this.store.activeWorldId];
-    this.newWorldPos = { x: newWorld.x, y: newWorld.y };
+
+    this.ai.generateThought();
   }
 
   completeTransition() {
-    const world = this.store.worlds[this.dyingWorldId];
-    if (world) {
-      world.type = 'collapsed';
-      world.collapsedAt = Date.now();
-      world.opacity = 0.8;
-    }
     this.isAnimating = false;
     this.currentHazards = [];
     this.character.x = 0; this.character.y = 0;
-    this.character.vx = (Math.random() - 0.5) * 1.4;
-    this.character.vy = (Math.random() - 0.5) * 1.4;
-  }
-
-  loadWorld() {
-    const w = this.store.worlds[this.store.activeWorldId];
-    if (w) this.currentHazards = JSON.parse(JSON.stringify(w.hazards)).filter(h => Math.sqrt(h.x*h.x + h.y*h.y) > 70);
-  }
-
-  draw() {
-    const ctx = this.ctx;
-    const cx = ctx.canvas.width / 2;
-    const cy = ctx.canvas.height / 2;
-
-    ctx.fillStyle = "#000";
-    ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-
-    // 1. СЕТКА
-    this.store.worlds.forEach(w => {
-      const wx = cx + w.x;
-      const wy = cy + w.y;
-
-      if (w.type === 'active') {
-        // ЭФФЕКТ ПУСТОГО МЕСТА: рисуем только тонкий пунктирный или тусклый контур гнезда
-        ctx.beginPath();
-        ctx.arc(wx, wy, 8, 0, Math.PI * 2);
-        ctx.strokeStyle = "rgba(0, 255, 65, 0.1)";
-        ctx.setLineDash([2, 2]);
-        ctx.stroke();
-        ctx.setLineDash([]);
-      } else {
-        // Рисуем неактивные миры
-        ctx.globalAlpha = w.opacity;
-        ctx.beginPath();
-        ctx.arc(wx, wy, 7, 0, Math.PI * 2);
-        ctx.fillStyle = w.type === 'collapsed' ? "#ff3333" : "#00ff41";
-        ctx.fill();
-        ctx.globalAlpha = 1;
-
-        // Названия под мирами в сетке
-        ctx.fillStyle = w.type === 'collapsed' ? "rgba(255, 51, 51, 0.4)" : "rgba(0, 255, 65, 0.3)";
-        ctx.font = "8px monospace";
-        ctx.textAlign = "center";
-        ctx.fillText(w.name, wx, wy + 15);
-      }
-    });
-
-    if (this.isAnimating) {
-      const p = this.transitionProgress;
-      this.pixels.forEach(px => {
-        ctx.fillStyle = "rgba(255, 50, 50, " + px.life + ")";
-        ctx.fillRect(cx + px.x, cy + px.y, px.size, px.size);
-      });
-
-      // УЛЕТАЮЩИЙ мир (в гнездо)
-      const oldX = cx + (this.dyingWorldPos.x * p);
-      const oldY = cy + (this.dyingWorldPos.y * p);
-      this.drawWorldCircle(ctx, oldX, oldY, 225 * (1 - p), "#ff3333");
-
-      // ПРИЛЕТАЮЩИЙ мир (из гнезда)
-      const newX = cx + (this.newWorldPos.x * (1 - p));
-      const newY = cy + (this.newWorldPos.y * (1 - p));
-      this.drawWorldCircle(ctx, newX, newY, 225 * p, "#00ff41");
-
-    } else {
-      const active = this.store.worlds[this.store.activeWorldId];
-      this.drawWorldCircle(ctx, cx, cy, 225, "#00ff41");
-      
-      ctx.fillStyle = "#00ff41";
-      ctx.font = "bold 18px monospace";
-      ctx.textAlign = "center";
-      ctx.fillText(active ? active.name : "", cx, cy - 245);
-
-      this.currentHazards.forEach(h => {
-        ctx.beginPath(); ctx.arc(cx + h.x, cy + h.y, h.r, 0, Math.PI * 2);
-        ctx.fillStyle = "rgba(255, 50, 50, 0.7)"; ctx.fill();
-      });
-      this.drawMan(ctx, cx + this.character.x, cy + this.character.y);
+    const activeWorld = this.store.worlds[this.store.activeWorldId];
+    if (activeWorld) {
+      this.store.camera.x = activeWorld.x;
+      this.store.camera.y = activeWorld.y;
     }
   }
 
-  drawWorldCircle(ctx, x, y, r, color) {
-    if (r < 1) return;
-    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2);
-    ctx.strokeStyle = color; ctx.lineWidth = 1.5; ctx.stroke();
-  }
-
-  drawMan(ctx, x, y) {
-    ctx.fillStyle = "#fff";
-    ctx.beginPath(); ctx.arc(x, y - 7, 4, 0, Math.PI * 2); ctx.fill();
-    ctx.fillRect(x - 3, y - 3, 6, 9);
-    ctx.fillRect(x - 6, y - 2, 12, 2);
-    ctx.fillRect(x - 2, y + 6, 1.5, 5);
-    ctx.fillRect(x + 0.5, y + 6, 1.5, 5);
-  }
+  draw() { this.renderer.draw(this.store, this); }
 }

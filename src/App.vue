@@ -76,7 +76,7 @@ body {
 
 .hud-header h1 {
   margin: 0;
-  font-size: 18px;
+  font-size: 15px;
   letter-spacing: 2px;
 }
 
@@ -139,5 +139,15 @@ body {
   align-items: center;
   justify-content: center;
   font-size: 24px;
+}
+@media screen and (max-width: 768px) {
+  .hud-header h1 {
+  margin: 0;
+  font-size: 9px;
+  letter-spacing: 2px;
+}
+.status-blink {
+   font-size: 9px;
+}
 }
 </style>

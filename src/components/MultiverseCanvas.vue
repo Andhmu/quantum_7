@@ -75,8 +75,14 @@
                 <label>НЕПРЕРЫВНОЕ_СУЩЕСТВОВАНИЕ</label>
                 <span class="val">{{ formatTime(store.continuousTime || 0) }}</span>
               </div>
+              <div class="entry mobile-only-awareness">
+                <label>ОСОЗНАНИЕ: {{ store.awareness || 0 }}%</label>
+                <div class="progress-track">
+                  <div class="progress-fill" :style="{ width: (store.awareness || 0) + '%' }"></div>
+                </div>
+              </div>
             </div>
-            <div class="awareness-container">
+            <div class="awareness-container desktop-only-awareness">
               <div class="label-row">
                 <span>ОСОЗНАНИЕ_СИМУЛЯЦИИ</span>
                 <span>{{ store.awareness || 0 }}%</span>
@@ -149,7 +155,6 @@ let engine = null;
 let raf = null;
 let timer = null;
 
-// Состояние для тач-событий
 let isDragging = false;
 let lastPos = { x: 0, y: 0 };
 let initialPinchDist = 0;
@@ -166,7 +171,6 @@ const formatTime = (s) => {
   return `${m}:${sec.toString().padStart(2, '0')}`;
 };
 
-// Взаимодействие (Мышь)
 const handleMouseDown = (e) => { if (e.button === 0) { isDragging = true; lastPos = { x: e.clientX, y: e.clientY }; } };
 const handleMouseMove = (e) => {
   if (isDragging) {
@@ -181,7 +185,6 @@ const handleWheel = (e) => {
   store.camera.zoom = Math.min(Math.max(store.camera.zoom - delta, 0.05), 2.5);
 };
 
-// Взаимодействие (Тач)
 const getDist = (t1, t2) => Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
 
 const handleTouchStart = (e) => {
@@ -218,12 +221,12 @@ const animate = () => {
 
 const updateLayout = () => {
   const canvas = canvasRef.value;
+  if (!canvas) return;
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
   
-  // Авто-зум для портретного режима мобилок
-  if (window.innerWidth < 768 && window.innerHeight > window.innerWidth) {
-    store.camera.zoom = 0.5;
+  if (window.innerWidth < 768) {
+    store.camera.zoom = 0.45;
   } else {
     store.camera.zoom = 0.8;
   }
@@ -246,39 +249,22 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.ui-mobile-wrapper {
-  position: absolute;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  pointer-events: none;
-  z-index: 10;
-  display: flex;
-  flex-direction: column;
-}
-
-.ui-top-stack, .side-panel, .launch-btn, .scientific-text {
-  pointer-events: auto;
-}
-
-.ui-spacer {
-  flex-grow: 1;
-}
-
-.multiverse-wrapper { 
-  position: relative; width: 100vw; height: 100vh; background: #000; 
-  overflow: hidden; font-family: 'Monospace', monospace; 
-}
+/* ДЕСКТОПНЫЕ СТИЛИ (ОРИГИНАЛ) */
+.ui-mobile-wrapper { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10; display: flex; flex-direction: column; padding: 20px; box-sizing: border-box; }
+.ui-top-stack, .side-panel, .launch-btn, .scientific-text { pointer-events: auto; }
+.ui-spacer { flex-grow: 1; }
+.multiverse-wrapper { position: relative; width: 100vw; height: 100vh; background: #000; overflow: hidden; font-family: 'Monospace', monospace; }
 .main-canvas { display: block; cursor: grab; transition: filter 1.2s ease; }
 .blur-bg { filter: blur(10px) grayscale(0.6); }
 
-.start-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: rgba(0, 0, 0, 0.7); z-index: 1000; }
-.intro-window { width: 650px; max-height: 85vh; background: rgba(255, 255, 255, 0.07); border: 1px solid rgba(255, 255, 255, 0.15); backdrop-filter: blur(30px); border-radius: 4px; box-shadow: 0 30px 60px rgba(0,0,0,0.8); display: flex; flex-direction: column; overflow: hidden; }
+.start-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: rgba(0, 0, 0, 0.7); z-index: 1000; padding: 20px; box-sizing: border-box; }
+.intro-window { width: 650px; max-width: 100%; max-height: 85vh; background: rgba(255, 255, 255, 0.07); border: 1px solid rgba(255, 255, 255, 0.15); backdrop-filter: blur(30px); border-radius: 4px; box-shadow: 0 30px 60px rgba(0,0,0,0.8); display: flex; flex-direction: column; overflow: hidden; }
 .window-header { flex-shrink: 0; background: rgba(255, 255, 255, 0.05); padding: 15px 25px; font-size: 10px; letter-spacing: 2px; color: rgba(255,255,255,0.7); border-bottom: 1px solid rgba(255, 255, 255, 0.1); display: flex; align-items: center; gap: 12px; }
 .pulse-dot { width: 6px; height: 6px; background: #00ff41; border-radius: 50%; animation: pulse 2s infinite; }
 @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.3; transform: scale(1.2); } }
 .window-content { padding: 30px 40px; display: flex; flex-direction: column; overflow: hidden; flex-grow: 1; }
 .scientific-text { color: rgba(255, 255, 255, 0.85); font-size: 13px; line-height: 1.7; margin-bottom: 30px; border-left: 1px solid #00ff41; padding-left: 25px; padding-right: 15px; overflow-y: auto; flex-grow: 1; text-align: justify; }
-.scientific-text::-webkit-scrollbar { width: 4px; }
+.scientific-text::-webkit-scrollbar { width: 4px; display: block; }
 .scientific-text::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); }
 .scientific-text::-webkit-scrollbar-thumb { background: #00ff41; }
 .scientific-text strong { color: #00ff41; font-weight: normal; text-transform: uppercase; }
@@ -291,7 +277,7 @@ onUnmounted(() => {
 .side-panel.glitch-mode { background: rgba(255, 51, 51, 0.25) !important; border-color: #ff3333 !important; animation: panel-shake 0.1s infinite !important; box-shadow: 0 0 30px rgba(255, 51, 51, 0.4) !important; }
 @keyframes panel-shake { 0% { transform: translate(0,0); } 25% { transform: translate(-2px, 1px); } 50% { transform: translate(2px, -1px); } 75% { transform: translate(-1px, -2px); } 100% { transform: translate(1px, 2px); } }
 
-.thought-bar { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); width: 600px; background: rgba(0, 15, 0, 0.8); border-left: 3px solid #00ff41; padding: 12px 25px; z-index: 100; backdrop-filter: blur(10px); }
+.thought-bar { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); width: 600px; max-width: 90%; background: rgba(0, 15, 0, 0.8); border-left: 3px solid #00ff41; padding: 12px 25px; z-index: 100; backdrop-filter: blur(10px); }
 .thought-item { display: flex; gap: 15px; color: #fff; font-size: 13px; align-items: center; }
 .timestamp { color: #00ff41; opacity: 0.6; font-size: 11px; }
 
@@ -309,18 +295,94 @@ onUnmounted(() => {
 .divider { height: 1px; background: rgba(255,255,255,0.1); margin: 15px 0; }
 .status-dot { width: 8px; height: 8px; background: #00ff41; border-radius: 50%; display: inline-block; margin-right: 12px; box-shadow: 0 0 8px #00ff41; }
 h2 { margin: 0; font-size: 18px; color: #00ff41; display: inline-block; text-transform: uppercase; letter-spacing: 1px; }
-.anomaly-box label { font-size: 9px; color: #00ff41; display: block; margin: 20px 0 8px; opacity: 0.8; }
+.anomaly-box label { font-size: 9px; color: #00ff41; display: block; margin: 15px 0 5px; opacity: 0.8; }
 .desc { font-size: 14px; opacity: 0.9; line-height: 1.5; color: #fff; }
 .footer { margin-top: 35px; display: flex; flex-direction: column; gap: 12px; }
 .stat-item { display: flex; justify-content: space-between; font-size: 10px; }
 .stat-item label { opacity: 0.5; }
-.stat-item span { color: #00ff41; }
 
+/* Управление видимостью шкал для разных версий */
+.mobile-only-awareness { display: none; }
+
+/* --- МОБИЛЬНАЯ АДАПТАЦИЯ (УЛЬТРА-СЖАТИЕ БЕЗ СЛОМА ДЕСКТОПА) --- */
+/* --- МОБИЛЬНАЯ АДАПТАЦИЯ --- */
+@media screen and (max-width: 768px) {
+  .ui-mobile-wrapper { padding: 0; }
+
+  /* 1. ПАНЕЛЬ СТАТИСТИКИ (ВЕРХ) */
+  .quantum-monitor { 
+    position: absolute; top: 0; left: 0; width: 100%; transform: none; 
+    padding: 8px 12px; background: rgba(0, 15, 0, 0.95); 
+    border-width: 0 0 1px 0; box-sizing: border-box; z-index: 3;
+  }
+  .monitor-header { margin-bottom: 4px; font-size: 8px; }
+  .stat-group { flex-direction: row; gap: 10px; align-items: center; justify-content: space-between; }
+  .entry label { font-size: 7px; margin-bottom: 2px; }
+  .entry .val { font-size: 11px; }
+  .desktop-only-awareness { display: none; }
+  .mobile-only-awareness { display: flex !important; flex-direction: column; flex-grow: 1; max-width: 80px; }
+  .mobile-only-awareness .progress-track { margin-top: 4px; }
+
+  /* 2. ПАНЕЛЬ ИНФОРМАЦИИ (КОМПАКТНАЯ + ЭФФЕКТ МОНИТОРА) */
+  .side-panel { 
+    position: absolute; 
+    bottom: 38px; /* Стыкуется ровно над полосой мыслей */
+    left: 0; right: 0; top: auto; width: 100%; 
+    padding: 6px 12px; /* Ужали отступы вдвое */
+    border-radius: 0; 
+    border-width: 1px 0 0 0; 
+    /* Возвращаем стекло и полупрозрачность для эффекта монитора */
+    background: rgba(5, 20, 5, 0.7); 
+    backdrop-filter: blur(8px);
+    box-sizing: border-box; z-index: 2;
+  }
+  
+  /* Усиливаем сканлайны специально для мобильной версии, чтобы их было лучше видно */
+  .scanline {
+    background: linear-gradient(to bottom, transparent 50%, rgba(0, 255, 65, 0.06) 50%);
+    z-index: 10;
+  }
+
+  h2 { font-size: 11px; margin: 0; }
+  .divider { margin: 4px 0; } /* Тоньше отступ */
+  .anomaly-box label { margin: 2px 0; font-size: 7px; }
+  .desc { 
+    font-size: 9px; line-height: 1.2; margin: 0;
+    /* Оставляем строго 1 строку текста с многоточием */
+    display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; 
+  }
+  
+  /* Перестроили нижнюю статистику горизонтально, чтобы сэкономить высоту */
+  .footer { 
+    margin-top: 6px; padding-top: 4px; flex-direction: row; 
+    justify-content: space-between; gap: 4px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  .stat-item { font-size: 7px; flex-direction: row; align-items: center; gap: 4px; }
+  .stat-item label { margin: 0; }
+
+  /* 3. ПОЛОСА МЫСЛЕЙ (НИЗ) */
+  .thought-bar { 
+    position: absolute; bottom: 0; left: 0; transform: none; 
+    width: 100%; max-width: 100%;
+    padding: 8px 12px; 
+    background: rgba(0, 20, 0, 0.95);
+    border-left: none; border-top: 1px solid #00ff41;
+    box-sizing: border-box; z-index: 3;
+    height: 38px; /* Ужали высоту */
+    display: flex; align-items: center;
+  }
+  .thought-item { font-size: 8px; gap: 6px; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .timestamp { font-size: 7px; }
+}
+
+
+/* АНИМАЦИИ */
 .fade-overlay-leave-active { transition: opacity 1.2s ease; }
 .fade-overlay-leave-to { opacity: 0; }
 .fade-thought-enter-active, .fade-thought-leave-active { transition: all 0.5s ease; }
 .fade-thought-enter-from { opacity: 0; transform: translateY(10px); }
 .fade-thought-leave-to { opacity: 0; transform: translateY(-10px); }
 .slide-enter-active, .slide-leave-active { transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
-.slide-enter-from, .slide-leave-to { transform: translateX(120%); opacity: 0; }
+.slide-enter-from, .slide-leave-to { transform: translateY(100%); opacity: 0; }
 </style>
