@@ -332,22 +332,17 @@ h2 { margin: 0; font-size: 18px; color: #00ff41; display: inline-block; text-tra
   .mobile-only-awareness .progress-track { margin-top: 4px; }
 
   /* 2. ПАНЕЛЬ ИНФОРМАЦИИ (КОМПАКТНАЯ + ЭФФЕКТ МОНИТОРА) */
-  /* 2. ИНФО-ПАНЕЛЬ (ТЕПЕРЬ В САМОМ НИЗУ) */
   .side-panel { 
     position: absolute; 
-    bottom: 0; 
-    left: 0; 
-    right: 0; 
-    top: auto; 
-    width: 100%; 
-    padding: 6px 12px; 
+    bottom: 38px; /* Стыкуется ровно над полосой мыслей */
+    left: 0; right: 0; top: auto; width: 100%; 
+    padding: 6px 12px; /* Ужали отступы вдвое */
     border-radius: 0; 
-    border-width: 1px 0 0 0; /* Рамка только сверху */
-    background: rgba(5, 20, 5, 0.9); /* Делаем плотнее, так как это база */
-    backdrop-filter: blur(10px);
-    box-sizing: border-box; 
-    z-index: 4;
-    height: 84px; /* Фиксируем высоту для точной стыковки */
+    border-width: 1px 0 0 0; 
+    /* Возвращаем стекло и полупрозрачность для эффекта монитора */
+    background: rgba(5, 20, 5, 0.7); 
+    backdrop-filter: blur(8px);
+    box-sizing: border-box; z-index: 2;
   }
   
   /* Усиливаем сканлайны специально для мобильной версии, чтобы их было лучше видно */
@@ -356,48 +351,34 @@ h2 { margin: 0; font-size: 18px; color: #00ff41; display: inline-block; text-tra
     z-index: 10;
   }
 
-   h2 { font-size: 11px; line-height: 1; }
-  .divider { margin: 4px 0; opacity: 0.3; }
- .anomaly-box label { margin: 0; font-size: 7px; }
+  h2 { font-size: 11px; margin: 0; }
+  .divider { margin: 4px 0; } /* Тоньше отступ */
+  .anomaly-box label { margin: 2px 0; font-size: 7px; }
   .desc { 
-    font-size: 9px; 
-    line-height: 1.1; 
-    display: -webkit-box; 
-    -webkit-line-clamp: 2; /* Возвращаем 2 строки, раз панель теперь внизу */
-    -webkit-box-orient: vertical; 
-    overflow: hidden; 
+    font-size: 9px; line-height: 1.2; margin: 0;
+    /* Оставляем строго 1 строку текста с многоточием */
+    display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; 
   }
   
   /* Перестроили нижнюю статистику горизонтально, чтобы сэкономить высоту */
   .footer { 
-    margin-top: 4px; 
-    padding-top: 4px; 
-    flex-direction: row; 
-    justify-content: space-between;
+    margin-top: 6px; padding-top: 4px; flex-direction: row; 
+    justify-content: space-between; gap: 4px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
   }
-  .stat-item { font-size: 7px; gap: 3px; }
+  .stat-item { font-size: 7px; flex-direction: row; align-items: center; gap: 4px; }
   .stat-item label { margin: 0; }
 
   /* 3. ПОЛОСА МЫСЛЕЙ (НИЗ) */
-  /* 1. ПОЛОСА МЫСЛЕЙ (ТЕПЕРЬ НАД ИНФО-ПАНЕЛЬЮ) */
   .thought-bar { 
-    position: absolute; 
-    bottom: 84px; /* Поднимаем выше (высота футера 46px + зазор) */
-    left: 0; 
-    transform: none; 
-    width: 100%; 
-    max-width: 100%;
-    padding: 6px 12px; 
-    background: rgba(0, 20, 0, 0.8);
-    border-left: none; 
-    border-top: 1px solid rgba(0, 255, 65, 0.4);
-    border-bottom: 1px solid rgba(0, 255, 65, 0.4);
-    box-sizing: border-box; 
-    z-index: 3;
-    height: 34px; 
-    display: flex; 
-    align-items: center;
-    backdrop-filter: blur(4px);
+    position: absolute; bottom: 0; left: 0; transform: none; 
+    width: 100%; max-width: 100%;
+    padding: 8px 12px; 
+    background: rgba(0, 20, 0, 0.95);
+    border-left: none; border-top: 1px solid #00ff41;
+    box-sizing: border-box; z-index: 3;
+    height: 38px; /* Ужали высоту */
+    display: flex; align-items: center;
   }
   .thought-item { font-size: 8px; gap: 6px; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .timestamp { font-size: 7px; }
