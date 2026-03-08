@@ -149,12 +149,6 @@ let engine = null;
 let raf = null;
 let timer = null;
 
-// Состояние для тач-событий
-let isDragging = false;
-let lastPos = { x: 0, y: 0 };
-let initialPinchDist = 0;
-let initialZoom = 1;
-
 const startSimulation = () => {
   store.isStarted = true;
 };
@@ -167,6 +161,8 @@ const formatTime = (s) => {
 };
 
 // Взаимодействие (Мышь)
+let isDragging = false;
+let lastPos = { x: 0, y: 0 };
 const handleMouseDown = (e) => { if (e.button === 0) { isDragging = true; lastPos = { x: e.clientX, y: e.clientY }; } };
 const handleMouseMove = (e) => {
   if (isDragging) {
@@ -181,29 +177,18 @@ const handleWheel = (e) => {
   store.camera.zoom = Math.min(Math.max(store.camera.zoom - delta, 0.05), 2.5);
 };
 
-// Взаимодействие (Тач)
-const getDist = (t1, t2) => Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
-
+// Взаимодействие (Тач для телефона)
 const handleTouchStart = (e) => {
   if (e.touches.length === 1) {
     isDragging = true;
     lastPos = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-  } else if (e.touches.length === 2) {
-    isDragging = false;
-    initialPinchDist = getDist(e.touches[0], e.touches[1]);
-    initialZoom = store.camera.zoom;
   }
 };
-
 const handleTouchMove = (e) => {
   if (isDragging && e.touches.length === 1) {
     store.camera.x -= (e.touches[0].clientX - lastPos.x) / store.camera.zoom;
     store.camera.y -= (e.touches[0].clientY - lastPos.y) / store.camera.zoom;
     lastPos = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-  } else if (e.touches.length === 2) {
-    const currentDist = getDist(e.touches[0], e.touches[1]);
-    const factor = currentDist / initialPinchDist;
-    store.camera.zoom = Math.min(Math.max(initialZoom * factor, 0.05), 2.5);
   }
 };
 const handleTouchEnd = () => isDragging = false;
@@ -216,54 +201,49 @@ const animate = () => {
   raf = requestAnimationFrame(animate);
 };
 
-const updateLayout = () => {
+onMounted(() => {
   const canvas = canvasRef.value;
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
-  
-  // Авто-зум для портретного режима мобилок
-  if (window.innerWidth < 768 && window.innerHeight > window.innerWidth) {
-    store.camera.zoom = 0.5;
-  } else {
-    store.camera.zoom = 0.8;
-  }
-};
-
-onMounted(() => {
-  updateLayout();
   if (!store.isInitialized) store.initMultiverse(100);
-  engine = new SimulationEngine(canvasRef.value.getContext('2d'), store);
+  engine = new SimulationEngine(canvas.getContext('2d'), store);
   animate();
   timer = setInterval(() => store.tick(), 1000);
-  window.addEventListener('resize', updateLayout);
+  window.addEventListener('resize', () => {
+    canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+  });
 });
 
 onUnmounted(() => {
   cancelAnimationFrame(raf);
   clearInterval(timer);
-  window.removeEventListener('resize', updateLayout);
 });
 </script>
 
 <style scoped>
+/* Здесь остаются твои базовые стили для десктопа (те, что ты прислал), 
+   но я добавлю поддержку нового контейнера */
+
 .ui-mobile-wrapper {
   position: absolute;
   top: 0; left: 0;
   width: 100%; height: 100%;
-  pointer-events: none;
+  pointer-events: none; /* Чтобы можно было кликать на канвас */
   z-index: 10;
   display: flex;
   flex-direction: column;
 }
 
+/* Разрешаем клики только по самим элементам управления */
 .ui-top-stack, .side-panel, .launch-btn, .scientific-text {
   pointer-events: auto;
 }
 
 .ui-spacer {
-  flex-grow: 1;
+  flex-grow: 1; /* Растягивается и толкает панели к краям */
 }
 
+/* Все остальные твои стили из оригинального файла ниже... */
 .multiverse-wrapper { 
   position: relative; width: 100vw; height: 100vh; background: #000; 
   overflow: hidden; font-family: 'Monospace', monospace; 
@@ -271,6 +251,7 @@ onUnmounted(() => {
 .main-canvas { display: block; cursor: grab; transition: filter 1.2s ease; }
 .blur-bg { filter: blur(10px) grayscale(0.6); }
 
+/* (Тут идут все остальные стили из твоего исходника без изменений) */
 .start-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: rgba(0, 0, 0, 0.7); z-index: 1000; }
 .intro-window { width: 650px; max-height: 85vh; background: rgba(255, 255, 255, 0.07); border: 1px solid rgba(255, 255, 255, 0.15); backdrop-filter: blur(30px); border-radius: 4px; box-shadow: 0 30px 60px rgba(0,0,0,0.8); display: flex; flex-direction: column; overflow: hidden; }
 .window-header { flex-shrink: 0; background: rgba(255, 255, 255, 0.05); padding: 15px 25px; font-size: 10px; letter-spacing: 2px; color: rgba(255,255,255,0.7); border-bottom: 1px solid rgba(255, 255, 255, 0.1); display: flex; align-items: center; gap: 12px; }
@@ -290,6 +271,7 @@ onUnmounted(() => {
 .side-panel { position: absolute; top: 60px; right: 30px; width: 320px; background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.2); padding: 25px; color: #fff; border-radius: 4px; }
 .side-panel.glitch-mode { background: rgba(255, 51, 51, 0.25) !important; border-color: #ff3333 !important; animation: panel-shake 0.1s infinite !important; box-shadow: 0 0 30px rgba(255, 51, 51, 0.4) !important; }
 @keyframes panel-shake { 0% { transform: translate(0,0); } 25% { transform: translate(-2px, 1px); } 50% { transform: translate(2px, -1px); } 75% { transform: translate(-1px, -2px); } 100% { transform: translate(1px, 2px); } }
+@keyframes text-glitch { 0% { clip-path: inset(40% 0 10% 0); } 20% { clip-path: inset(10% 0 60% 0); } 40% { clip-path: inset(80% 0 5% 0); } 100% { clip-path: inset(0% 0 0% 0); } }
 
 .thought-bar { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); width: 600px; background: rgba(0, 15, 0, 0.8); border-left: 3px solid #00ff41; padding: 12px 25px; z-index: 100; backdrop-filter: blur(10px); }
 .thought-item { display: flex; gap: 15px; color: #fff; font-size: 13px; align-items: center; }
